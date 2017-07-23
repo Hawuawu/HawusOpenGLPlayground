@@ -226,62 +226,15 @@ void drawGround(float groundLevel)
 void display(GLFWwindow* window)
 {
 
-	VXLEShaderProgram geometryShadersProgram;
-	GLuint geometryShadersProgramInt = geometryShadersProgram.compile (
-		VXLEShader("shaders/translate_voxel.geom", GL_VERTEX_SHADER)
+	VXLEShaderProgram vertexShaderProgram;
+	GLuint vertexShaderProgramInt = vertexShaderProgram.compile (
+		VXLEShader("shaders/vertex.shader", GL_VERTEX_SHADER)
 	);
 
-	glm::vec2 translations[100];
-	int index = 0;
-	GLfloat offset = 0.1f;
-	for (GLint y = -10; y < 10; y += 2)
-	{
-		for (GLint x = -10; x < 10; x += 2)
-		{
-			glm::vec2 translation;
-			translation.x = (GLfloat)x / 10.0f + offset;
-			translation.y = (GLfloat)y / 10.0f + offset;
-			translations[index++] = translation;
-		}
-	}
 
-	// Store instance data in an array buffer
-	GLuint instanceVBO;
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// Generate quad VAO
-	GLfloat quadVertices[] = {
-		// Positions   // Colors
-		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-		0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-		-0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
 
-		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-		0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-		0.05f,  0.05f,  0.0f, 1.0f, 1.0f
-	};
-	GLuint quadVAO, quadVBO;
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-	// Also set instance data
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2, 1); // Tell OpenGL this is an instanced vertex attribute.
-	glBindVertexArray(0);
-
-	std::string file = "D:/SRTM/N48E011.vxlmap";
+	/*std::string file = "D:/SRTM/N48E011.vxlmap";
 	ifstream input_file(file.c_str(), ios::in | ios::binary);
 	
 	cout << input_file.good();
@@ -295,7 +248,7 @@ void display(GLFWwindow* window)
 		short * voxels = new short[numberOfVoxels * 3];		
 		input_file.read((char*)voxels, numberOfVoxels * 3 * sizeof(short));
 
-		delete[] voxels;
+		delete[] voxels;*/
 		/*for (int i = 0; i < (numberOfVoxels * 3); i+=3) {
 			cout << voxels[i] << "-" << voxels[i+1] << "-" << voxels[i+2] << "\n";
 		}*/
@@ -310,10 +263,10 @@ void display(GLFWwindow* window)
 			short z;
 			input_file.read((char*)&z, sizeof(short));
 		}
-		*/
+		*//*
 		counter++;
 	}
-	cout << counter;
+	cout << counter;*/
 	/*
 
 	while ((input_file.read((char *) & block, sizeof(SRTMVoxelBlock)))) {
@@ -328,8 +281,24 @@ void display(GLFWwindow* window)
 		cout << "-------------------------------------------------------\n";
 	}
 	*/
+
+	vector<VXLEVoxelChunk *> chunks;
+
+	for(int x = 0; x < 10; x++) {
+		for (int y = 0; y < 1; y++) {
+			for (int z = 0; z < 10; z++) {
+				VXLEVoxelChunk *chunk = new VXLEVoxelChunk(x, y, z);
+				chunk->fillFullWithVoxels();
+				chunks.push_back(chunk);
+			}
+		}
+	}
+
+
+
 	while (!glfwWindowShouldClose(window))
 	{
+	//	glUseProgram(vertexShaderProgramInt);
 		// Scale to window size
 		GLint windowWidth, windowHeight;
 		glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -362,8 +331,7 @@ void display(GLFWwindow* window)
 	    glTranslatef(-1 * engineCamera->getPosition().x, -1 * engineCamera->getPosition().y, -1 * engineCamera->getPosition().z);
 
 //		glUseProgram(geometryShadersProgramInt);
-
-		glBindVertexArray(quadVAO);
+	
 		//glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each
 		glBindVertexArray(0);
 
@@ -372,34 +340,81 @@ void display(GLFWwindow* window)
 		origin.y = 0;
 		origin.z = 0;
 
-		VXLEVoxel *voxel = new VXLEVoxel(0,0,0);
-	//	voxel->openGLDraw(origin);
-		delete voxel;
+		
+/*
+		GLfloat vertices[72] = {
+			0.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, -1.0f,
+			1.0f, 0.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			0.0f, 1.0f, -1.0f,
+			1.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, -1.0f,
+			1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, -1.0f,
+			0.0f, 1.0f, -1.0f,
+			0.0f, 1.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, -1.0f,
+			0.0f, 1.0f, -1.0f,
+			0.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, -1.0f,
+			0.0f, 0.0f, -1.0f
+		};
 
+		GLfloat *vp = vertices;
 
-		//drawCube();
+		GLfloat colors[72] = {
+			1, 1, 1,  1, 1, 1,   1, 1, 1,   1, 1, 1,
+			1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1,
+			1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1,
+			1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1,
+			1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1,
+			1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1
 
-	//	glm::vec3 origin;
+		};*/
 
 		
-		
-/*		glm::vec3 origin;
-		origin.x = 0;
-		origin.y = 0;
-		origin.z = 0;*/
 
 
-		for (int i = 0; i < 32; i += 2) {
-			for (int j = 0; j < 32; j += 2)
-			{
-				for (int k = 0; k < 32; k += 2)
-				{
-					VXLEVoxel *voxel = new VXLEVoxel(i, j, k);
-					voxel->openGLDraw(origin);
-					delete voxel;
-				}
+
+		for (int i = 0; i < chunks.size(); i++) {
+			if (chunks[i]->verticesArraySize() > 0) {
+				glEnableClientState(GL_VERTEX_ARRAY);
+				glEnableClientState(GL_COLOR_ARRAY);
+
+				glVertexPointer(3, GL_FLOAT, 0, chunks[i]->verticesArray());
+				glColorPointer(3, GL_FLOAT, 0, chunks[i]->colorsArray());
+
+				glDrawArrays(GL_QUADS, 0, chunks[i]->verticesArraySize() / 3);
+
+				glDisableClientState(GL_COLOR_ARRAY);
+				glDisableClientState(GL_VERTEX_ARRAY);
 			}
 		}
+		//glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
+		//glColorPointer(3, GL_FLOAT, 0, &colors[0]);
+
+	//	glDrawArraysInstanced(GL_QUADS, 0, vertices.size() / 3, 1);
+
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+
+
+
+
+//
+		//VXLEVoxel *voxel = new VXLEVoxel(0,0,0);
+//		voxel->openGLDraw(origin);
+//		delete voxel;
 
 		
 

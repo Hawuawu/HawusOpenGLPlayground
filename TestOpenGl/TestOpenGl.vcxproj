@@ -299,6 +299,7 @@
     <ClInclude Include="VXLECamera.h" />
     <ClInclude Include="VXLEngineSettings.h" />
     <ClInclude Include="VXLEVoxel.h" />
+    <ClInclude Include="VXLEVoxelChunk.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -311,6 +312,7 @@
     <ClCompile Include="VXLECamera.cpp" />
     <ClCompile Include="VXLEShaderProgram.cpp" />
     <ClCompile Include="VXLEVoxel.cpp" />
+    <ClCompile Include="VXLEVoxelChunk.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="glm\detail\func_common.inl" />

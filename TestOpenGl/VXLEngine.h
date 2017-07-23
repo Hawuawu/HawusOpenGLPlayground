@@ -5,6 +5,7 @@
 
 #include "VXLECamera.h"
 #include "VXLEVoxel.h"
+#include "VXLEVoxelChunk.h"
 #include "VXLEShaderProgram.h"
 
 class VXLEngine {
